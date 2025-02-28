@@ -27,14 +27,6 @@ namespace LifeSim
     //Create docs
     #endregion
 
-    #region COMMITS
-    //Finished the mouse logic, and change resolution dto.
-    //To finish design changes:
-      //Finish grid InitReset()
-      //Create TeamsClassicMouseLogic
-      //Remake dispatcher and delete all old stuff
-    #endregion
-
     #region Fields
     private Graphics Graphics { get; set; }
     private Color BackgroundColor { get; set; }
