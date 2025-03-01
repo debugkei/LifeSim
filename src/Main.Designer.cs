@@ -28,7 +28,6 @@
     /// </summary>
     private void InitializeComponent() {
       components = new System.ComponentModel.Container();
-      System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(Main));
       scMap = new SplitContainer();
       splitContainer2 = new SplitContainer();
       nudBrushTeam = new NumericUpDown();
@@ -520,15 +519,14 @@
       // 
       timerGPS.Tick += timerGPS_Tick;
       // 
-      // Form1
+      // Main
       // 
       AutoScaleDimensions = new SizeF(7F, 15F);
       AutoScaleMode = AutoScaleMode.Font;
       ClientSize = new Size(1146, 617);
       Controls.Add(scMap);
-      Icon = (Icon)resources.GetObject("$this.Icon");
       MinimumSize = new Size(352, 641);
-      Name = "Form1";
+      Name = "Main";
       Text = "Life Simulator";
       Resize += Form1_Resize;
       scMap.Panel1.ResumeLayout(false);
