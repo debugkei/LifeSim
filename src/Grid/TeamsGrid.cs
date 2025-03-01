@@ -184,5 +184,39 @@ namespace LifeSim {
     /// The grid property itself, to set the grid itself
     /// </summary>
     public object Grid { get; set; }
+
+    ///<summary>
+    /// Resizes the grid (Resets), and initializes with old values with offsets
+    /// </summary>
+    public void InitReset(int width, int height, int xOffset, int yOffset) {
+      //Reference to a grid
+      var grid = (byte[,])Grid;
+
+      //Cache old grid
+      var oldGrid = new byte[Width, Height];
+      for (var i = 0; i < Width; ++i) {
+        for (var j = 0; j < Height; ++j) {
+          oldGrid[i, j] = grid[i, j];
+        }
+      }
+
+      //Reset the new grid, reference still stays
+      Reset(width, height);
+
+      //Iterate over the grid
+      for (var i = 0; i < width && i < oldGrid.GetLength(0); ++i) {
+        for (var j = 0; j < height && j < oldGrid.GetLength(1); ++j) {
+          //Calculate cordinates, plus (+) to get expectable behavior: with -n the old values moved to left, with n the old values are moved to right, both on new grid
+          var x = i + xOffset;
+          var y = j + yOffset;
+
+          //If cordinate point outside the grid
+          if (x < 0 || y < 0 || x >= Width || y >= Height) continue;
+
+          //Assigning to that reference to a new grid value with an offset
+          grid[x, y] = oldGrid[i, j];
+        }
+      }
+    }
   }
 }

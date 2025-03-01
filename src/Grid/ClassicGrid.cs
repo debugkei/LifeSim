@@ -2,6 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.Serialization.Formatters.Binary;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -67,6 +68,8 @@ namespace LifeSim {
 
       Width = width;
       Height = height;
+
+      Grid = grid;
     }
 
     /// <summary>
@@ -196,5 +199,37 @@ namespace LifeSim {
     /// The grid property itself, to set the grid itself
     /// </summary>
     public object Grid { get; set; }
+
+    ///<summary>
+    /// Resizes the grid (Resets), and initializes with old values with offsets
+    /// </summary>
+    public void InitReset(int width, int height, int xOffset, int yOffset) {
+      //Reference to a grid
+      var grid = (BitArray[])Grid;
+
+      //Cache old grid
+      var oldGrid = new BitArray[Width];
+      for (var i = 0; i < Width; ++i) {
+        oldGrid[i] = new BitArray(grid[i]);
+      }
+
+      //Reset the new grid, reference still stays
+      Reset(width, height);
+
+      //Iterate over the grid
+      for (var i = 0; i < width && i < oldGrid.Length; ++i) {
+        for (var j = 0; j < height && j < oldGrid[i].Length; ++j) {
+          //Calculate cordinates, plus (+) to get expectable behavior: with -n the old values moved to left, with n the old values are moved to right, both on new grid
+          var x = i + xOffset;
+          var y = j + yOffset;
+
+          //If cordinate point outside the grid
+          if (x < 0 || y < 0 || x >= Width || y >= Height) continue;
+
+          //Assigning to that reference to a new grid value with an offset
+          grid[x][y] = oldGrid[i][j];
+        }
+      }
+    }
   }
 }
