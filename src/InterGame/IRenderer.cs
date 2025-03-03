@@ -13,7 +13,7 @@ namespace LifeSim {
     /// Renders only the cells on the grid, not its job to clear
     /// </summary>
     /// <param name="grid"></param>
-    public void RenderGrid(IGrid grid);
+    public void RenderGrid(IInitResetable grid);
 
     /// <summary>
     /// Clears the map

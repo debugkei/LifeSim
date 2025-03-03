@@ -1,6 +1,6 @@
 ﻿namespace LifeSim
 {
-  partial class Main
+  partial class View
   {
     /// <summary>
     ///  Required designer variable.

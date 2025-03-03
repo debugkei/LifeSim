@@ -6,46 +6,28 @@ using System.Windows.Forms;
 
 namespace LifeSim
 {
-  /// <summary>
-  /// This class is the center of the program.
-  ///The whole purpose of it, is to dispatch operations, when it recieves them.
-  /// </summary>
-  public partial class Main : Form
+  public partial class View : Form
   {
     #region REMEMBER
     //Potential issue lays in mouse logic, the way previous cordinates are calculated, potential bug: move doesnt work properly, Potentially fixed at the end of Apply()
-    //Potential issue: after resoution change, the mouse still stores the old cordinates. Potential fix: update mouse pos right after resolution change
+    //Potential issue: after resolution change, the mouse still stores the old cordinates. Potential fix: update mouse pos right after resolution change
     #endregion
 
     #region TODO
     //Make better GUI
     //Finish design changes
-    //Code review after uploading to github
-    //Bring thread manipulations to DTO (Think about MT)
-    //Funcs & DTO arent intuitive
-    //Change methods' names in interfaces, instead of handle maybe be more straightforward
+      //Functions supposed to take concrete values
+      //Delete all interfaces, probably
+      //Finish creating IGame and its implementations
+      //Finish deleting DTO and Funcs
+      //Remake the mouse steps rendering, maybe add a method render single
+      //Rules and grid are already remade, handler and renderer to go, along with view and games
+    //Code review
+    //Thread manipulations
     //Create docs
     #endregion
 
-    #region Fields
-    private Graphics Graphics { get; set; }
-    private Color BackgroundColor { get; set; }
-    private Color CellColor { get; set; }
-    private Color MouseStepsColor { get; set; }
-    private bool PixelOffBorder { get => cbPixelOffBorder.Checked; }
-    private bool IsRandomBrush { get => cbRandomBrush.Checked; }
-    private bool _isChangingResolution;
-    private int Resolution { get; set; }
-    private int Offset { get; set; }
-    private int Density { get => (int)nudDensity.Value; }
-    private int BrushThickness { get => (int)nudBrushThickness.Value; }
-    public int BrushTeam { get => (int)nudBrushTeam.Value; }
-    private ICPUMTPresenter2D Presenter { get; set; }
-    private IGUICPUMTMechanics2D _mechanics;
-    #endregion
-
-    //View
-    public Main()
+    public View()
     {
       InitializeComponent();
 
@@ -230,46 +212,6 @@ namespace LifeSim
       _mechanics.ResetModel(pbMap, Offset, Resolution);
       Graphics.Clear(BackgroundColor);
     }
-    private void ChangeResolution(int x, int y, int value)
-    {
-      if (!_isChangingResolution)
-      {
-        _isChangingResolution = true;
-        if (x > 0 && y > 0 && x < pbMap.Width / Resolution && y < pbMap.Height / Resolution && value >= nudResolution.Minimum && value <= nudResolution.Maximum)
-        {
-          var oldResolution = Resolution;
-          Resolution = value;
-          nudResolution.Value = value;
-          if (oldResolution > Resolution)
-          {
-            //downscale, map zoomed out
-            var newWidth = pbMap.Width / Resolution;
-            var oldWidth = pbMap.Width / oldResolution;
-            var newHeight = pbMap.Height / Resolution;
-            var oldHeight = pbMap.Height / oldResolution;
-            _mechanics.ResetAndInitModel(pbMap,
-              (int)((newWidth - oldWidth) * x / oldWidth),
-              (int)((newHeight - oldHeight) * y / oldHeight),
-              0, 0, Offset, Resolution, (int)nudThreads.Value);
-            _mechanics.UpdatePreviousMousePos((newWidth - oldWidth) / 2, (newHeight - oldHeight) / 2);
-          }
-          else
-          {
-            //upscale, map zoomed in
-            var newWidth = pbMap.Width / Resolution;
-            var oldWidth = pbMap.Width / oldResolution;
-            var newHeight = pbMap.Height / Resolution;
-            var oldHeight = pbMap.Height / oldResolution;
-            _mechanics.ResetAndInitModel(pbMap, 0, 0,
-              (int)((oldWidth - newWidth) * x / oldWidth),
-              (int)((oldHeight - newHeight) * y / oldHeight),
-              Offset, Resolution, (int)nudThreads.Value);
-            _mechanics.UpdatePreviousMousePos(-(oldWidth - newWidth) / 2, -(oldHeight - newHeight) / 2);
-          }
-        }
-        _isChangingResolution = false;
-      }
-    }
     private void Pause()
     {
       timerGPS.Stop();
@@ -280,5 +222,36 @@ namespace LifeSim
     }
     #endregion
 
+
+    ///<summary>
+    /// Changes the resolution including the x and y centers.
+    /// This method isnt responsible for validation of xCenter and yCenter.
+    /// But indeed responsible for delta.
+    /// </summary>
+    public void ChangeResolution(IInitResetable grid, int delta, int xCenter, int yCenter) {
+      //Whether resolution is in limits
+      if (Resolution + delta >= MinimumResolution && Resolution + delta < MaximumResolution) {
+        //Cache old resolution and init new
+        var oldResolution = Resolution;
+        Resolution += delta;
+
+        //Calculate the new grid width and height
+        var newWidth = PBBox.Width / Resolution;
+        var oldWidth = PBBox.Width / oldResolution;
+        var newHeight = PBBox.Height / Resolution;
+        var oldHeight = PBBox.Height / oldResolution;
+
+        //downscale, map zoomed out
+        if (oldResolution > Resolution) {
+          //Inits the new map with old values at specific offset, offset here includes the center
+          grid.InitReset(newWidth, newHeight, (int)((newWidth - oldWidth) * xCenter / oldWidth), (int)((newHeight - oldHeight) * yCenter / oldHeight));
+        }
+        //upscale, map zoomed in
+        else if (Resolution > oldResolution) {
+          //Inits the new map with old values at specific offset, offset here includes the center
+          grid.InitReset(newWidth, newHeight, -(int)((oldWidth - newWidth) * xCenter / oldWidth), -(int)((oldHeight - newHeight) * yCenter / oldHeight));
+        }
+      }
+    }
   }
 }

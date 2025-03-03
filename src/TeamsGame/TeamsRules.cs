@@ -9,10 +9,10 @@ namespace LifeSim {
   /// <summary>
   /// The core logic of the LifeSim, the generations computations, computes the grid's generation with teams
   /// </summary>
-  internal class TeamsCoreLogic : ICoreLogic {
+  internal class TeamsRules {
     private byte _teams;
     private Random _rand;
-    public TeamsCoreLogic(byte teams) {
+    public TeamsRules(byte teams) {
       _teams = teams;
       _rand = new Random();
     }
@@ -20,14 +20,14 @@ namespace LifeSim {
     /// Calculates the next generation on the grid, on the single thread, and assigns it to the grid
     /// </summary>
     /// <param name="grid"></param>
-    public void CalculateNextGen(IGrid grid) {
+    public void Apply(TeamsGrid grid) {
       //Temp mapdata to store the new generation and then assign to grid
       var newMapData = new byte[grid.Width, grid.Height];
 
       //Calculate next gen into newMapData
       for (int i = 0; i < grid.Width; ++i) {
         for (int j = 0; j < grid.Height; ++j) {
-          var lifeType = (byte)grid[i, j];
+          var lifeType = grid[i, j];
           var hasLife = lifeType != 0;
 
           if (hasLife) {
@@ -77,7 +77,7 @@ namespace LifeSim {
     /// </summary>
     /// <param name="grid"></param>
     /// <param name="nThreads"></param>
-    public void CalculateNextGenMT(IGrid grid, int nThreads) {
+    public void ApplyMT(TeamsGrid grid, int nThreads) {
       //Declare list of tasks, and positions that tasks are responsible for
       List<Task> tasks = new List<Task>();
       var parts = Funcs.DivideGridIntoParts(nThreads, grid.Width, grid.Height);
@@ -114,17 +114,17 @@ namespace LifeSim {
     /// <param name="y"></param>
     /// <param name="lifeType"></param>
     /// <returns></returns>
-    private int CountFriends(IGrid grid, int x, int y, int lifeType) {
+    private int CountFriends(TeamsGrid grid, int x, int y, int lifeType) {
       int count = 0;
 
       for (int i = -1; i <= 1; ++i) {
         for (int j = -1; j <= 1; ++j) {
-          var _x = (x + i + grid.Width) % grid.Width;
-          var _y = (y + j + grid.Height) % grid.Height;
+          var x_i = (x + i + grid.Width) % grid.Width;
+          var y_j = (y + j + grid.Height) % grid.Height;
 
-          if (_x == x && _y == y) continue;
+          if (x_i == x && y_j == y) continue;
 
-          if (lifeType != 0 && (byte)grid[_x, _y] == lifeType) {
+          if (lifeType != 0 && grid[x_i, y_j] == lifeType) {
             ++count;
           }
         }
@@ -139,19 +139,19 @@ namespace LifeSim {
     /// <param name="y"></param>
     /// <param name="lifeType"></param>
     /// <returns></returns>
-    private int CountEnemies(IGrid grid, int x, int y, int lifeType) {
+    private int CountEnemies(TeamsGrid grid, int x, int y, int lifeType) {
       int count = 0;
 
       for (int i = -1; i <= 1; ++i) {
         for (int j = -1; j <= 1; ++j) {
-          var _x = (x + i + grid.Width) % grid.Width;
-          var _y = (y + j + grid.Height) % grid.Height;
+          var x_i = (x + i + grid.Width) % grid.Width;
+          var y_j = (y + j + grid.Height) % grid.Height;
 
-          if (_x == x && _y == y) continue;
+          if (x_i == x && y_j == y) continue;
 
-          var iCell = (byte)grid[_x, _y];
+          var xyCell = grid[x_i, y_j];
 
-          if (iCell != 0 && iCell != lifeType) {
+          if (xyCell != 0 && xyCell != lifeType) {
             ++count;
           }
         }
@@ -167,11 +167,11 @@ namespace LifeSim {
     /// <param name="startHeight"></param>
     /// <param name="endHeight"></param>
     /// <param name="newMapData"></param>
-    private void ThreadCalculateNextGen(IGrid grid, int startWidth, int endWidth, int startHeight, int endHeight, byte[,] newMapData) {
+    private void ThreadCalculateNextGen(TeamsGrid grid, int startWidth, int endWidth, int startHeight, int endHeight, byte[,] newMapData) {
       //Calculate next gen into newMapData
       for (int i = startWidth; i < endWidth; ++i) {
         for (int j = startHeight; j < endHeight; ++j) {
-          var lifeType = (byte)grid[i, j];
+          var lifeType = grid[i, j];
           var hasLife = lifeType != 0;
 
           if (hasLife) {

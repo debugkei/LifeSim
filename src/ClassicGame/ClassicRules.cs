@@ -10,12 +10,12 @@ namespace LifeSim {
   /// <summary>
   /// The core logic of the LifeSim, the generations computations, computes the classical way
   /// </summary>
-  internal class ClassicCoreLogic : ICoreLogic {
+  internal class ClassicRules {
     /// <summary>
     /// Calculates the next generation on single thread, and assigns it to the grid
     /// </summary>
     /// <param name="grid"></param>
-    public void CalculateNextGen(IGrid grid) {
+    public void Apply(ClassicGrid grid) {
       //Create a bit array, as temp grid
       var newGrid = new BitArray[grid.Width];
       for (var i = 0; i < grid.Width; ++i) {
@@ -26,7 +26,7 @@ namespace LifeSim {
       for (var i = 0; i < grid.Width; ++i) {
         for (var j = 0; j < grid.Height; ++j) {
           var neighborCount = CountNeighbors(grid, i, j);
-          var hasLife = (bool)grid[i,j];
+          var hasLife = grid[i,j];
 
           newGrid[i][j] = hasLife
             ? neighborCount == 2 || neighborCount == 3
@@ -43,7 +43,7 @@ namespace LifeSim {
     /// </summary>
     /// <param name="grid"></param>
     /// <param name="nThreads"></param>
-    public void CalculateNextGenMT(IGrid grid, int nThreads) {
+    public void ApplyMT(ClassicGrid grid, int nThreads) {
       //Declare list of tasks, and positions that tasks are responsible for
       List<Task> tasks = new List<Task>();
       var parts = Funcs.DivideGridIntoParts(nThreads, grid.Width, grid.Height);
@@ -84,12 +84,12 @@ namespace LifeSim {
     /// <param name="startHeight"></param>
     /// <param name="endHeight"></param>
     /// <param name="newGrid"></param>
-    private void ThreadCalculateNextGen(IGrid grid, int startWidth, int endWidth, int startHeight, int endHeight, BitArray[] newGrid) {
+    private void ThreadCalculateNextGen(ClassicGrid grid, int startWidth, int endWidth, int startHeight, int endHeight, BitArray[] newGrid) {
       //Calculate next gen of the part of the map, and update the newGrid variable
       for (int j = startWidth; j < endWidth; ++j) {
         for (int k = startHeight; k < endHeight; ++k) {
           var neighborCount = CountNeighbors(grid, j, k);
-          var hasLife = (bool)grid[j, k];
+          var hasLife = grid[j, k];
 
           newGrid[j][k] = hasLife
             ? neighborCount == 2 || neighborCount == 3
@@ -105,20 +105,20 @@ namespace LifeSim {
     /// <param name="x"></param>
     /// <param name="y"></param>
     /// <returns></returns>
-    private int CountNeighbors(IGrid grid, int x, int y) {
+    private int CountNeighbors(ClassicGrid grid, int x, int y) {
       var count = 0;
 
       for (var i = -1; i <= 1; ++i) {
         for (var j = -1; j <= 1; ++j) {
           //Calculate the position
-          var _x = (x + i + grid.Width) % grid.Width;
-          var _y = (y + j + grid.Height) % grid.Height;
+          var x_i = (x + i + grid.Width) % grid.Width;
+          var y_j = (y + j + grid.Height) % grid.Height;
 
           //Dont self count
-          if (x == _x && _y == y) continue;
+          if (x == x_i && y_j == y) continue;
 
           //Increment
-          if ((bool)grid[_x, _y]) {
+          if (grid[x_i, y_j]) {
             ++count;
           }
         }

@@ -69,7 +69,7 @@ namespace LifeSim {
     /// <summary>
     /// The mouse steps rectangles, mouse logic sets them, and renderer uses them
     /// </summary>
-    public Rectangle[,] MouseStepsRects { get; set; }
+    public Rectangle?[,] MouseStepsRects { get; set; }
 
     /// <summary>
     /// Calculates the width of a single cell
@@ -94,37 +94,6 @@ namespace LifeSim {
     /// </summary>
     private SolidBrush GetMouseStepsBrush() {
       return new SolidBrush(Color.FromArgb(MouseStepsTransparency, MouseStepsColor));
-    }
-
-    ///<summary>
-    /// Changes the resolution including the x and y centers.
-    /// This method isnt responsible for validation of xCenter and yCenter.
-    /// But indeed responsible for delta.
-    /// </summary>
-    public void ChangeResolution(IGrid grid, int delta, int xCenter, int yCenter) {
-      //Whether resolution is in limits
-      if (Resolution + delta >= MinimumResolution && Resolution + delta < MaximumResolution) {
-        //Cache old resolution and init new
-        var oldResolution = Resolution;
-        Resolution += delta;
-
-        //Calculate the new grid width and height
-        var newWidth = PBBox.Width / Resolution;
-        var oldWidth = PBBox.Width / oldResolution;
-        var newHeight = PBBox.Height / Resolution;
-        var oldHeight = PBBox.Height / oldResolution;
-
-        //downscale, map zoomed out
-        if (oldResolution > Resolution) {
-          //Inits the new map with old values at specific offset, offset here includes the center
-          grid.InitReset(newWidth, newHeight, (int)((newWidth - oldWidth) * xCenter / oldWidth), (int)((newHeight - oldHeight) * yCenter / oldHeight));
-        }
-        //upscale, map zoomed in
-        else if (Resolution > oldResolution) {
-          //Inits the new map with old values at specific offset, offset here includes the center
-          grid.InitReset(newWidth, newHeight, -(int)((oldWidth - newWidth) * xCenter / oldWidth), -(int)((oldHeight - newHeight) * yCenter / oldHeight));
-        }
-      }
     }
   }
 }

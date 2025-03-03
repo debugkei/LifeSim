@@ -8,22 +8,21 @@ namespace LifeSim {
   /// <summary>
   /// Classic mouse logic implementation
   /// </summary>
-  class ClassicMouseLogic : IMouseLogic {
-    private RMDDTO _dto;
+  class ClassicMouseHandler : IMouseHandler {
     private bool _isMoving;
     private bool _isDrawing;
     private bool _isErasing;
     private int _previousX;
     private int _previousY;
     private Point _brushCenter;
-    public ClassicMouseLogic(RMDDTO dto, int brushWidth, int brushHeight, int x, int y) {
+    private Rectangle?[,] _mouseStepsRects;
+    public ClassicMouseHandler(int brushWidth, int brushHeight, int x, int y) {
       //Init
-      _dto = dto;
       BrushWidth = brushWidth;
       BrushHeight = brushHeight;
       X = x;
       Y = y;
-      _dto.MouseStepsRects = new Rectangle[BrushWidth, BrushHeight];
+      _mouseStepsRects = new Rectangle?[BrushWidth, BrushHeight];
       _brushCenter = Funcs.GetBrushCenter(X, Y, BrushWidth, BrushHeight);
     }
 
@@ -41,7 +40,7 @@ namespace LifeSim {
     //Callback to update rectangles on change
     public int BrushWidth { get => BrushWidth; set { 
         BrushWidth = value;
-        _dto.MouseStepsRects = new Rectangle[BrushWidth, BrushHeight];
+        _mouseStepsRects = new Rectangle?[BrushWidth, BrushHeight];
         _brushCenter = Funcs.GetBrushCenter(X, Y, BrushWidth, BrushHeight);
       }
     }
@@ -51,7 +50,7 @@ namespace LifeSim {
     //Callback to update rectangles on change
     public int BrushHeight { get => BrushHeight; set { 
         BrushHeight = value;
-        _dto.MouseStepsRects = new Rectangle[BrushWidth, BrushHeight];
+        _mouseStepsRects = new Rectangle?[BrushWidth, BrushHeight];
         _brushCenter = Funcs.GetBrushCenter(X, Y, BrushWidth, BrushHeight);
       }
     }
@@ -60,7 +59,7 @@ namespace LifeSim {
     /// Applies only all the computations that are made to the grid.
     /// Necessary to be called to draw or erase.
     /// </summary>
-    public void ApplyGridChanges(IGrid grid) {
+    public void ApplyGridChanges(ClassicGrid grid) {
       //Draw
       if (_isDrawing) Draw(grid);
       //Erase
@@ -71,7 +70,7 @@ namespace LifeSim {
     /// Applies only all the visual changes.
     /// Necessary to be called to move or zoom.
     /// </summary>
-    public void ApplyVisualChanges(IGrid grid) {
+    public void ApplyVisualChanges(ClassicGrid grid) {
       //Move
       if (_isMoving) grid.Move(_previousX - X, _previousY - Y);
       //Set the rectangles for renderer to draw as mouse steps
@@ -79,7 +78,7 @@ namespace LifeSim {
         for (var i = 0; i < BrushWidth; ++i) {
           for (var j = 0; j < BrushWidth; ++j) {
             //It makes a cursor (center) be in the middle, if the width or height is even if focuses rectangle to the left (or up)
-            _dto.MouseStepsRects[i, j] = new Rectangle((i - _brushCenter.X + X), (j - _brushCenter.Y + Y), _dto.CellWidth, _dto.CellWidth);
+            _mouseStepsRects[i, j] = new Rectangle((i - _brushCenter.X + X), (j - _brushCenter.Y + Y), _dto.CellWidth, _dto.CellWidth);
           }
         }
       }
@@ -88,7 +87,7 @@ namespace LifeSim {
       _previousY = Y;
     }
 
-    private void Draw(IGrid grid) {
+    private void Draw(ClassicGrid grid) {
       for (var i = 0; i < BrushWidth; ++i) {
         for (var j = 0; j < BrushWidth; ++j) {
           //Draw all elements including the brush thickness
@@ -96,7 +95,7 @@ namespace LifeSim {
         }
       }
     }
-    private void Erase(IGrid grid) {
+    private void Erase(ClassicGrid grid) {
       for (var i = 0; i < BrushWidth; ++i) {
         for (var j = 0; j < BrushWidth; ++j) {
           //Draw all elements including the brush thickness
@@ -157,11 +156,11 @@ namespace LifeSim {
     /// Changes the resolution, centered on cursor.
     /// </summary>
     /// <param name="grid"></param>
-    public void HandleMouseWheel(IGrid grid, int delta) {
+    public void HandleMouseWheel(ClassicGrid grid, int delta) {
       //Check if the mouse is on the grid
       if (X >= 0 && Y >= 0 && X < grid.Width && Y < grid.Height) {
         //Change resolution, delta will be checked inside
-        _dto.ChangeResolution(grid, delta, X, Y);
+        _view.ChangeResolution(grid, delta, X, Y);
       }
     }
   }

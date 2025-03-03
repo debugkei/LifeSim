@@ -8,7 +8,7 @@ namespace LifeSim {
   /// <summary>
   /// Mouse logic, responible for handling the mouse
   /// </summary>
-  internal interface IMouseLogic {
+  internal interface IMouseHandler {
     /// <summary>
     /// Cursor X cordinate on the grid
     /// </summary>
@@ -32,13 +32,13 @@ namespace LifeSim {
     /// Applies only all the computations that are made to the grid.
     /// Necessary to be called to draw or erase.
     /// </summary>
-    public void ApplyGridChanges(IGrid grid);
+    public void ApplyGridChanges(IInitResetable grid);
 
     /// <summary>
     /// Applies only all the visual changes.
     /// Necessary to be called to move or zoom.
     /// </summary>
-    public void ApplyVisualChanges(IGrid grid);
+    public void ApplyVisualChanges(IInitResetable grid);
 
     /// <summary>
     /// Informs that specific mouse button was clicked
@@ -62,7 +62,7 @@ namespace LifeSim {
     /// Informs that mouse wheel was used.
     /// </summary>
     /// <param name="grid"></param>
-    public void HandleMouseWheel(IGrid grid, int delta);
+    public void HandleMouseWheel(IInitResetable grid, int delta);
   }
 
   enum MouseButtonType {

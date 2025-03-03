@@ -10,7 +10,7 @@ namespace LifeSim {
   /// <summary>
   /// Classic grid implementation
   /// </summary>
-  internal class ClassicGrid : IGrid {
+  internal class ClassicGrid : IInitResetable {
     private Random _rand;
     public ClassicGrid(int width, int height) {
       _rand = new Random();
@@ -31,11 +31,9 @@ namespace LifeSim {
     /// Empty the whole grid, assign default values to every cell
     /// </summary>
     public void Empty() {
-      var grid = (BitArray[])Grid;
-
       for (var i = 0; i < Width; ++i) {
         for (var j = 0; j < Height; ++j) {
-          grid[i][j] = false;
+          Grid[i][j] = false;
         }
       }
     }
@@ -45,11 +43,9 @@ namespace LifeSim {
     /// </summary>
     /// <param name="density"></param>
     public void Random(int density) {
-      var grid = (BitArray[])Grid;
-
       for (var i = 0; i < Width; ++i) {
         for (var j = 0; j < Height; ++j) {
-          grid[i][j] = _rand.Next(0, density) == 0;
+          Grid[i][j] = _rand.Next(0, density) == 0;
         }
       }
     }
@@ -78,8 +74,6 @@ namespace LifeSim {
     /// <param name="x"></param>
     /// <param name="y"></param>
     public void Move(int x, int y) {
-      var grid = (BitArray[])Grid;
-      
       //In place move of the grid, could write less code but then less optimized
       //X
       if (x > 0) {
@@ -88,8 +82,8 @@ namespace LifeSim {
           //Move to right
           for (var i = Width - 1 - x; i >= 0; --i) {
             for (var j = 0; j < Height; ++j) {
-              grid[i + x][j] = grid[i][j];
-              grid[i][j] = false;
+              Grid[i + x][j] = Grid[i][j];
+              Grid[i][j] = false;
             }
           }
         }
@@ -100,8 +94,8 @@ namespace LifeSim {
           //Move to left
           for (var i = 0 - x; i < Width; ++i) {
             for (var j = 0; j < Height; ++j) {
-              grid[i + x][j] = grid[i][j];
-              grid[i][j] = false;
+              Grid[i + x][j] = Grid[i][j];
+              Grid[i][j] = false;
             }
           }
         }
@@ -113,8 +107,8 @@ namespace LifeSim {
           //Move up
           for (var i = 0; i < Width; ++i) {
             for (var j = 0 + y; j < Height; ++j) {
-              grid[i][j - y] = grid[i][j];
-              grid[i][j] = false;
+              Grid[i][j - y] = Grid[i][j];
+              Grid[i][j] = false;
             }
           }
         }
@@ -125,8 +119,8 @@ namespace LifeSim {
           //Move down
           for (var i = 0; i < Width; ++i) {
             for (var j = Height - 1 + y; j >= 0; --j) {
-              grid[i][j - y] = grid[i][j];
-              grid[i][j] = false;
+              Grid[i][j - y] = Grid[i][j];
+              Grid[i][j] = false;
             }
           }
         }
@@ -152,7 +146,7 @@ namespace LifeSim {
         var task_i = i;
         tasks.Add(Task.Run(() => {
           SingleThreadMove(x, y,
-            newGrid, (BitArray[])Grid,
+            newGrid, Grid,
             parts[task_i][0][0], parts[task_i][0][1], parts[task_i][1][0], parts[task_i][1][1]);
         }));
       }
@@ -191,29 +185,26 @@ namespace LifeSim {
     /// <param name="x"></param>
     /// <param name="y"></param>
     /// <returns></returns>
-    public object this[int x, int y] {
-      get => ((BitArray[])Grid)[x][y]; set => ((BitArray[])Grid)[x][y] = (bool)value;
+    public bool this[int x, int y] {
+      get => Grid[x][y]; set => Grid[x][y] = value;
     }
 
     /// <summary>
     /// The grid property itself, to set the grid itself
     /// </summary>
-    public object Grid { get; set; }
+    public BitArray[] Grid { get; set; }
 
     ///<summary>
     /// Resizes the grid (Resets), and initializes with old values with offsets
     /// </summary>
     public void InitReset(int width, int height, int xOffset, int yOffset) {
-      //Reference to a grid
-      var grid = (BitArray[])Grid;
-
       //Cache old grid
       var oldGrid = new BitArray[Width];
       for (var i = 0; i < Width; ++i) {
-        oldGrid[i] = new BitArray(grid[i]);
+        oldGrid[i] = new BitArray(Grid[i]);
       }
 
-      //Reset the new grid, reference still stays
+      //Reset the new grid
       Reset(width, height);
 
       //Iterate over the grid
@@ -226,8 +217,8 @@ namespace LifeSim {
           //If cordinate point outside the grid
           if (x < 0 || y < 0 || x >= Width || y >= Height) continue;
 
-          //Assigning to that reference to a new grid value with an offset
-          grid[x][y] = oldGrid[i][j];
+          //Assigning to a new grid value with an offset
+          Grid[x][y] = oldGrid[i][j];
         }
       }
     }

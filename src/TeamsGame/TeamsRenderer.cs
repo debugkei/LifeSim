@@ -36,7 +36,7 @@ namespace LifeSim {
     /// Renders only the cells on the grid, not its job to clear
     /// </summary>
     /// <param name="grid"></param>
-    public void RenderGrid(IGrid grid) {
+    public void RenderGrid(IInitResetable grid) {
       var nW = grid.Width - _dto.Offset;
       var nH = grid.Height - _dto.Offset;
       for (int i = 0; i + _dto.Offset < nW; i++) {
@@ -55,10 +55,10 @@ namespace LifeSim {
     /// Renders the mouse steps, color below cursor that shows where to draw, on the grid
     /// </summary>
     /// <param name="grid"></param>
-    public void RenderMouseSteps(IGrid grid, IMouseLogic mouseLogic) {
+    public void RenderMouseSteps(IInitResetable grid, IMouseHandler mouseLogic) {
       for (int i = 0; i < mouseLogic.BrushWidth; ++i) {
         for (int j = 0; j < mouseLogic.BrushHeight; ++j) {
-          _graphics.FillRectangle(_dto.MouseStepsBrush, _dto.MouseStepsRects[i, j]);
+          if (_dto.MouseStepsRects[i, j] != null) _graphics.FillRectangle(_dto.MouseStepsBrush, _dto.MouseStepsRects[i, j] ?? default);
         }
       }
     }
