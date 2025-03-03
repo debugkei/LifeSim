@@ -9,8 +9,8 @@ I only used vs2022 for it, and I dont know how it will be edited in other IDEs.
 I only used vs2022 on this, so just opening the solution is enough.  
 Visual studio will do the job.  
 
-# Whats the thing with those random files?
-Those files are temporarly there because I'm remaking (revamping) the whole thing.
+# Whats the thing with those errors and files?
+Those errors and files are temporarly there because I'm remaking (revamping) the whole thing.
 
 # Vendors/Dependencies
 I used:
