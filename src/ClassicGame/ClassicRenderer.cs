@@ -10,22 +10,33 @@ namespace LifeSim {
   /// <summary>
   /// Classic Renderer for WinForms, renders via CPU
   /// </summary>
-  internal class ClassicRenderer : IRenderer {
+  internal class ClassicRenderer {
     private Graphics _graphics;
     private SolidBrush _cellBrush;
+    private View _view;
     public Color CellColor { get => CellColor; set { CellColor = value; _cellBrush = new SolidBrush(CellColor); } }
+    /// <summary>
+    /// Offset of the map at which its rendered
+    /// </summary>
     public int Offset { get; set; }
     public int Resolution { get; set; }
-    private int _cellWidth;
-    public bool PixelOffBorder { get => PixelOffBorder; set { PixelOffBorder = value; _cellWidth = GetCellWidth(); } }
+    //Cell width
+    public int CellWidth { get; private set; }
+    public bool PixelOffBorder { get => PixelOffBorder; set { PixelOffBorder = value; CellWidth = GetCellWidth(); } }
+    public Color BackgroundColor { get; set; }
     //Ctor
-    public ClassicRenderer() {
-      //Create map
-      _view.Image = new Bitmap(_view.Width, _view.Height); // _view.Image is pbMap's image, same with Width and Height
-      _graphics = Graphics.FromImage(_view.Image);
+    public ClassicRenderer(View view, Color cellColor, int offset, int resolution, bool pixelOffBorder, Color backgroundColor) {
+      //Init
+      _view = view;
+      CellColor = cellColor;
+      Offset = offset;
+      Resolution = resolution;
+      PixelOffBorder = pixelOffBorder;
+      BackgroundColor = backgroundColor;
 
-      //Set variables
-      _cellBrush = new SolidBrush(CellColor);
+      //Create map
+      _view.Image = new Bitmap(_view.GridWidth, _view.GridHeight); // _view.Image is pbMap's image, same with Width and Height
+      _graphics = Graphics.FromImage(_view.Image);
     }
 
     /// <summary>
@@ -35,34 +46,30 @@ namespace LifeSim {
     public void RenderGrid(ClassicGrid grid) {
       var nW = grid.Width - Offset;
       var nH = grid.Height - Offset;
-      for (int i = 0; i + Offset < nW; i++) {
-        for (int j = 0; j + Offset < nH; j++) {
+      for (int i = Offset; i < nW; i++) {
+        for (int j = Offset; j < nH; j++) {
           //Render the cell if its alive
-          if ((bool)grid[i + Offset, j + Offset]) {
+          if (grid[i, j]) {
             _graphics.FillRectangle(_cellBrush, i * Resolution, j * Resolution,
-            _cellWidth, _cellWidth);
+            CellWidth, CellWidth);
           }
         }
       }
     }
 
     /// <summary>
-    /// Renders the mouse steps, color below cursor that shows where to draw, on the grid
+    /// Renders a single rectangle
     /// </summary>
     /// <param name="grid"></param>
-    public void RenderMouseSteps(ClassicGrid grid, IMouseHandler mouseLogic) {
-      for (int i = 0; i < mouseLogic.BrushWidth; ++i) {
-        for (int j = 0; j < mouseLogic.BrushHeight; ++j) {
-          if (_dto.MouseStepsRects[i, j] != null) _graphics.FillRectangle(_dto.MouseStepsBrush, _dto.MouseStepsRects[i, j] ?? default);
-        }
-      }
+    public void RenderRect(SolidBrush brush, Rectangle rect) {
+      _graphics.FillRectangle(brush, rect);
     }
 
     /// <summary>
     /// Clears the map
     /// </summary>
     public void Clear() {
-      _graphics.Clear(_dto.BackgroundColor);
+      _graphics.Clear(BackgroundColor);
     }
 
     /// <summary>

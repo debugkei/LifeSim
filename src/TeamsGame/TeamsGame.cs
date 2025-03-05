@@ -9,7 +9,7 @@ namespace LifeSim {
   /// The game interface implementation, game is managed from here.
   /// Specifically teams game implementation.
   /// </summary>
-  class TeamsGame {
+  internal class TeamsGame {
 
   }
 }

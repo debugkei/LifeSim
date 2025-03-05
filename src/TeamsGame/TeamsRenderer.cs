@@ -2,87 +2,102 @@
 using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;
 
 namespace LifeSim {
   /// <summary>
-  /// Teams Renderer for WinForms, renders via CPU
+  /// Classic Renderer for WinForms, renders via CPU
   /// </summary>
-  internal class TeamsRenderer : IRendererWithMouse {
+  internal class TeamsRenderer {
     private Graphics _graphics;
-    private PictureBox _pbMap;
     private SolidBrush[] _cellBrushes;
-    private RMDDTO _dto;
-
+    private View _view;
+    public Color[] CellColors { get => CellColors; set { CellColors = value; _cellBrushes = GetCellBrushes(); } }
+    /// <summary>
+    /// Offset of the map at which its rendered
+    /// </summary>
+    public int Offset { get; set; }
+    public int Resolution { get; set; }
+    //Cell width
+    public int CellWidth { get; private set; }
+    public bool PixelOffBorder { get => PixelOffBorder; set { PixelOffBorder = value; CellWidth = GetCellWidth(); } }
+    public Color BackgroundColor { get; set; }
     //Ctor
-    public TeamsRenderer(PictureBox pbMap, RMDDTO dto) {
-      //Init values
-      _pbMap = pbMap;
-      _dto = dto;
-
-      //Set up callbacks
-      _dto.OnCellColorChanged += () => { _cellBrushes = GetCellBrushes(); };
+    public TeamsRenderer(View view, Color[] cellColors, int offset, int resolution, bool pixelOffBorder, Color backgroundColor) {
+      //Init
+      _view = view;
+      CellColors = cellColors;
+      Offset = offset;
+      Resolution = resolution;
+      PixelOffBorder = pixelOffBorder;
+      BackgroundColor = backgroundColor;
 
       //Create map
-      _pbMap.Image = new Bitmap(_pbMap.Width, _pbMap.Height);
-      _graphics = Graphics.FromImage(_pbMap.Image);
-
-      //Set variables
-      _cellBrushes = GetCellBrushes();
+      _view.Image = new Bitmap(_view.GridWidth, _view.GridHeight); // _view.Image is pbMap's image, same with Width and Height
+      _graphics = Graphics.FromImage(_view.Image);
     }
 
     /// <summary>
     /// Renders only the cells on the grid, not its job to clear
     /// </summary>
     /// <param name="grid"></param>
-    public void RenderGrid(IInitResetable grid) {
-      var nW = grid.Width - _dto.Offset;
-      var nH = grid.Height - _dto.Offset;
-      for (int i = 0; i + _dto.Offset < nW; i++) {
-        for (int j = 0; j + _dto.Offset < nH; j++) {
-          //Render the cells according to their colors
-          if ((byte)grid[i + _dto.Offset, j + _dto.Offset] > 0) {
-            var cellBrush = new SolidBrush(((Color[])_dto.CellColor)[(byte)grid[i + _dto.Offset, j + _dto.Offset] - 1]);
-            _graphics.FillRectangle(cellBrush, i * _dto.Resolution, j * _dto.Resolution,
-            _dto.CellWidth, _dto.CellWidth);
-          }
+    public void RenderGrid(TeamsGrid grid) {
+      var nW = grid.Width - Offset;
+      var nH = grid.Height - Offset;
+      for (int i = Offset; i < nW; i++) {
+        for (int j = Offset; j < nH; j++) {
+          //Render the cells if its alive
+          if (grid[i, j] == 0) continue; // Cell is not alive
+          if (grid[i, j] + 1 >= CellColors.Length) continue; //Skip unknown cell value
+          _graphics.FillRectangle(_cellBrushes[grid[i, j] + 1], i * Resolution, j * Resolution,
+          CellWidth, CellWidth);
         }
       }
     }
 
     /// <summary>
-    /// Renders the mouse steps, color below cursor that shows where to draw, on the grid
+    /// Renders a single rectangle
     /// </summary>
     /// <param name="grid"></param>
-    public void RenderMouseSteps(IInitResetable grid, IMouseHandler mouseLogic) {
-      for (int i = 0; i < mouseLogic.BrushWidth; ++i) {
-        for (int j = 0; j < mouseLogic.BrushHeight; ++j) {
-          if (_dto.MouseStepsRects[i, j] != null) _graphics.FillRectangle(_dto.MouseStepsBrush, _dto.MouseStepsRects[i, j] ?? default);
-        }
-      }
+    public void RenderRect(SolidBrush brush, Rectangle rect) {
+      _graphics.FillRectangle(brush, rect);
     }
 
     /// <summary>
     /// Clears the map
     /// </summary>
     public void Clear() {
-      _graphics.Clear(_dto.BackgroundColor);
+      _graphics.Clear(BackgroundColor);
     }
 
     /// <summary>
-    /// Gets the cellBrushes
+    /// Calculates the width of a single cell
     /// </summary>
     /// <returns></returns>
-    private SolidBrush[] GetCellBrushes() {
-      Color[] colors = (Color[])_dto.CellColor;
-      SolidBrush[] cellBrushes = new SolidBrush[colors.Length];
+    private int GetCellWidth() {
+      return Resolution - (PixelOffBorder ? 1 : 0);
+    }
 
-      for (var i = 0; i < colors.Length; ++i) {
-        cellBrushes[i] = new SolidBrush(colors[i]);
+    /// <summary>
+    /// Gets the mouse steps brush
+    /// </summary>
+    private SolidBrush GetMouseStepsBrush() {
+      return new SolidBrush(Color.FromArgb(MouseStepsAlpha, MouseStepsColor));
+    }
+
+    ///<summary>
+    /// Gets the cell brushes
+    /// </summary>
+    private SolidBrush[] GetCellBrushes() {
+      var brushes = new SolidBrush[CellColors.Length];
+
+      for (var i = 0; i < brushes.Length; ++i) {
+        brushes[i] = new SolidBrush(CellColors[i]);
       }
 
-      return cellBrushes;
+      return brushes;
     }
   }
 }

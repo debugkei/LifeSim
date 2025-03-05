@@ -9,7 +9,7 @@ namespace LifeSim {
   /// The game interface implementation, game is managed from here.
   /// Specifically classic game implementation.
   /// </summary>
-  class ClassicGame : IGame {
+  internal class ClassicGame : IGame {
 
   }
 }

@@ -8,22 +8,32 @@ namespace LifeSim {
   /// <summary>
   /// Classic mouse logic implementation
   /// </summary>
-  class ClassicMouseHandler : IMouseHandler {
+  class ClassicMouseHandler {
     private bool _isMoving;
     private bool _isDrawing;
     private bool _isErasing;
     private int _previousX;
     private int _previousY;
     private Point _brushCenter;
-    private Rectangle?[,] _mouseStepsRects;
-    public ClassicMouseHandler(int brushWidth, int brushHeight, int x, int y) {
+    private Rectangle[,] _mouseStepsRects;
+    private ClassicRenderer _renderer;
+    //Mouse steps "Preview of draw. Color below cursor."
+    private SolidBrush _mouseStepsBrush;
+    public Color MouseStepsColor { get => MouseStepsColor; set { MouseStepsColor = value; _mouseStepsBrush = GetMouseStepsBrush(); } }
+    public byte MouseStepsAlpha { get => MouseStepsAlpha; set { MouseStepsAlpha = value; _mouseStepsBrush = GetMouseStepsBrush(); } }
+    private View _view;
+    public ClassicMouseHandler(int brushWidth, int brushHeight, int x, int y, ClassicRenderer renderer, Color mouseStepsColor, byte mouseStepsAlpha, View view) {
       //Init
       BrushWidth = brushWidth;
       BrushHeight = brushHeight;
       X = x;
       Y = y;
-      _mouseStepsRects = new Rectangle?[BrushWidth, BrushHeight];
+      _renderer = renderer;
+      MouseStepsColor = mouseStepsColor;
+      MouseStepsAlpha = mouseStepsAlpha;
+      _mouseStepsRects = new Rectangle[BrushWidth, BrushHeight];
       _brushCenter = Funcs.GetBrushCenter(X, Y, BrushWidth, BrushHeight);
+      _view = view;
     }
 
     /// <summary>
@@ -40,7 +50,7 @@ namespace LifeSim {
     //Callback to update rectangles on change
     public int BrushWidth { get => BrushWidth; set { 
         BrushWidth = value;
-        _mouseStepsRects = new Rectangle?[BrushWidth, BrushHeight];
+        _mouseStepsRects = new Rectangle[BrushWidth, BrushHeight];
         _brushCenter = Funcs.GetBrushCenter(X, Y, BrushWidth, BrushHeight);
       }
     }
@@ -50,7 +60,7 @@ namespace LifeSim {
     //Callback to update rectangles on change
     public int BrushHeight { get => BrushHeight; set { 
         BrushHeight = value;
-        _mouseStepsRects = new Rectangle?[BrushWidth, BrushHeight];
+        _mouseStepsRects = new Rectangle[BrushWidth, BrushHeight];
         _brushCenter = Funcs.GetBrushCenter(X, Y, BrushWidth, BrushHeight);
       }
     }
@@ -78,8 +88,16 @@ namespace LifeSim {
         for (var i = 0; i < BrushWidth; ++i) {
           for (var j = 0; j < BrushWidth; ++j) {
             //It makes a cursor (center) be in the middle, if the width or height is even if focuses rectangle to the left (or up)
-            _mouseStepsRects[i, j] = new Rectangle((i - _brushCenter.X + X), (j - _brushCenter.Y + Y), _dto.CellWidth, _dto.CellWidth);
+            _mouseStepsRects[i, j] = new Rectangle((i - _brushCenter.X + X), (j - _brushCenter.Y + Y), _renderer.CellWidth, _renderer.CellWidth);
           }
+        }
+      }
+      //Ask renderer to render mouse steps
+      for (var i = 0; i < BrushWidth; ++i) {
+        for (var j = 0; j < BrushWidth; ++j) {
+          var x = _mouseStepsRects[i, j].X / _renderer.Resolution;
+          var y = _mouseStepsRects[i, j].Y / _renderer.Resolution;
+          if (x >= 0 && y >= 0 && x < grid.Width && y < grid.Height) _renderer.RenderRect(_mouseStepsBrush, _mouseStepsRects[i, j]);
         }
       }
 
@@ -162,6 +180,13 @@ namespace LifeSim {
         //Change resolution, delta will be checked inside
         _view.ChangeResolution(grid, delta, X, Y);
       }
+    }
+
+    /// <summary>
+    /// Gets the mouse steps brush
+    /// </summary>
+    private SolidBrush GetMouseStepsBrush() {
+      return new SolidBrush(Color.FromArgb(MouseStepsAlpha, MouseStepsColor));
     }
   }
 }

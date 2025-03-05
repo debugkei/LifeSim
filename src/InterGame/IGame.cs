@@ -8,7 +8,7 @@ namespace LifeSim {
   /// <summary>
   /// The game interface, game is managed from here.
   /// </summary>
-  interface IGame {
+  internal interface IGame {
 
   }
 }

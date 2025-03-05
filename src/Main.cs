@@ -16,12 +16,8 @@ namespace LifeSim
     #region TODO
     //Make better GUI
     //Finish design changes
-      //Functions supposed to take concrete values
-      //Delete all interfaces, probably
-      //Finish creating IGame and its implementations
-      //Finish deleting DTO and Funcs
-      //Remake the mouse steps rendering, maybe add a method render single
-      //Rules and grid are already remade, handler and renderer to go, along with view and games
+      //Finish creating IGame, its implementations, View
+      //Think about Funcs
     //Code review
     //Thread manipulations
     //Create docs
