@@ -8,59 +8,55 @@ namespace LifeSim
 {
   public partial class View : Form
   {
-    #region REMEMBER
+    #region Issues
     //Potential issue lays in mouse logic, the way previous cordinates are calculated, potential bug: move doesnt work properly, Potentially fixed at the end of Apply()
     //Potential issue: after resolution change, the mouse still stores the old cordinates. Potential fix: update mouse pos right after resolution change
+    //The mouse handling uses X and Y of the grid, which has an offset
     #endregion
 
     #region TODO
     //Make better GUI
-    //Finish design changes
-      //Finish creating IGame, its implementations, View
-      //Think about Funcs
+    //Make all TODOs
+    //Think about Funcs
     //Code review
     //Thread manipulations
     //Create docs
     #endregion
 
+    private IGame _game;
+    public int Resolution { get => (int)nudResolution.Value; private set { nudResolution.Value = value; } }
+    public int MaximumResolution { get => (int)nudResolution.Maximum; }
+    public int MinimumResolution { get => (int)nudResolution.Minimum; }
+    public Image Image { get => PBBox.Image; set { PBBox.Image = value; } }
+    public int GridWidth { get => PBBox.Width; set { PBBox.Width = value; } }
+    public int GridHeight { get => PBBox.Height; set { PBBox.Width = value; } }
+
     public View()
     {
       InitializeComponent();
 
-      //Call Tester
-      UnitTester.TestAll();
+      _game = new ClassicGame(
+        this, Color.Crimson, (int)nudOffset.Value, (int)nudResolution.Value, cbPixelOffBorder.Checked, Color.Black,
+        PBBox.Width / (int)nudResolution.Value, PBBox.Height / (int)nudResolution.Value, (byte)nudTransparency.Value, Color.Gray,
+        (int)nudBrushThickness.Value, (int)nudBrushThickness.Value, 0, 0
+      );
 
-      #region Init Actions
-      //Set colors && Style
-      BackgroundColor = Color.Black;
-      CellColor = Color.Crimson;
-      MouseStepsColor = Color.Gray;
-
-      pbMap.Image = new Bitmap(pbMap.Width, pbMap.Height);
-      Graphics = Graphics.FromImage(pbMap.Image);
-      Resolution = (int)nudResolution.Value;
-      Offset = (int)nudOffset.Value;
       timerFPS.Interval = CalculateFPS();
       timerGPS.Interval = CalculateGPS();
-      Reset();
-      Presenter.EmptyMap();
       timerGPS.Start();
       timerFPS.Start();
-      #endregion
+
+      _game.Set();
     }
 
-    #region Forms Callbacks
     //Timers
     private void timerFPS_Tick(object sender, EventArgs e)
     {
-      Graphics.Clear(BackgroundColor);
-      _mechanics.DrawWholeMap(Offset, PixelOffBorder, Graphics, Resolution, CellColor);
-      _mechanics.DrawMouseSteps(Graphics, Resolution, PixelOffBorder, (int)nudTransparency.Value, MouseStepsColor);
-      pbMap.Refresh();
+      _game.Update();
     }
     private void timerGPS_Tick(object sender, EventArgs e)
     {
-      Presenter.CalculateNextGen((int)nudThreads.Value);
+      _game.FixedUpdate();
     }
     //Intervals
     private void nudFPS_ValueChanged(object sender, EventArgs e)
@@ -82,83 +78,87 @@ namespace LifeSim
     //Start
     private void butStart_Click(object sender, EventArgs e)
     {
-      Reset();
-      Presenter.RandomMap(Density);
-      timerFPS.Start();
+      _game.Set();
     }
     //Pause
     private void butPause_Click(object sender, EventArgs e)
     {
       if (timerGPS.Enabled)
       {
-        Pause();
+        timerGPS.Stop();
       }
       else
       {
-        Unpause();
+        timerGPS.Start();
       }
     }
     //Empty
     private void butEmpty_Click(object sender, EventArgs e)
     {
-      Presenter.EmptyMap();
+      _game.Empty();
     }
     //Mouse Handle
     private void pbMap_MouseMove(object sender, MouseEventArgs e)
     {
-      _mechanics.HandleMouse(e, pbMap, Offset, Resolution, BrushThickness, IsRandomBrush, Density, (int)nudThreads.Value);
+      _game.MouseMove(e.X / (int)nudResolution.Value, e.Y / (int)nudResolution.Value);
     }
     private void pbMap_MouseDown(object sender, MouseEventArgs e)
     {
-      pbMap_MouseMove(sender, e);
+      switch (e.Button) {
+        case MouseButtons.Left:
+          _game.MouseDown(MouseButtonType.Left);
+          break;
+        case MouseButtons.Right:
+          _game.MouseDown(MouseButtonType.Right);
+          break;
+        case MouseButtons.Middle:
+          _game.MouseDown(MouseButtonType.Middle);
+          break;
+        default:
+          break;
+      }
     }
     private void pbMap_MouseWheel(object sender, MouseEventArgs e)
     {
-      pbMap_MouseMove(sender, e);
-      ChangeResolution(e.X / Resolution, e.Y / Resolution, Resolution + MathF.Sign(e.Delta));
+      _game.MouseWheel(e.Delta);
     }
     //Resolution
     private void nudResolution_ValueChanged(object sender, EventArgs e)
     {
-      ChangeResolution(pbMap.Width / Resolution / 2, pbMap.Height / Resolution / 2, (int)nudResolution.Value);
+      //TODO: wait for GUI chantes and then configure resoution
     }
     //Offset
     private void nudOffset_ValueChanged(object sender, EventArgs e)
     {
-      var oldOffset = Offset;
-      Offset = (int)nudOffset.Value;
-      if (oldOffset > Offset)
-      {
-        //Decrease
-        _mechanics.ResetAndInitModel(pbMap, 0, 0, oldOffset - Offset, oldOffset - Offset, Offset, Resolution, (int)nudThreads.Value);
-      }
-      else
-      {
-        //Increase
-        _mechanics.ResetAndInitModel(pbMap, Offset - oldOffset, Offset - oldOffset, 0, 0, Offset, Resolution, (int)nudThreads.Value);
-      }
+      _game.Offset = (int)nudOffset.Value;
     }
     //Support for Resizing
     private void Form1_Resize(object sender, EventArgs e)
     {
-      pbMap.Width = scMap.Panel2.Width;
-      pbMap.Height = scMap.Panel2.Height;
+      //TODO: implement resizing
+      //pbMap.Width = scMap.Panel2.Width;
+      //pbMap.Height = scMap.Panel2.Height;
 
-      pbMap.Image = new Bitmap(scMap.Panel2.Width, scMap.Panel2.Height);
+      //pbMap.Image = new Bitmap(scMap.Panel2.Width, scMap.Panel2.Height);
 
-      Graphics = Graphics.FromImage(pbMap.Image);
-      _mechanics.ResetAndInitModel(pbMap, Offset, Resolution);
-      timerFPS_Tick(sender, e);
+      //Graphics = Graphics.FromImage(pbMap.Image);
+      //_mechanics.ResetAndInitModel(pbMap, Offset, Resolution);
+      //timerFPS_Tick(sender, e);
     }
     //Color buttons
     private void butBackColor_Click(object sender, EventArgs e) {
-      BackgroundColor = RequestColor();
+      _game.BackgroundColor = RequestColor();
     }
     private void butCellColor_Click(object sender, EventArgs e) {
-      CellColor = RequestColor();
+      if (_game is ClassicGame gameClassic) {
+        gameClassic.CellColor = RequestColor();
+      }
+      else if (_game is TeamsGame gameTeams) {
+        //TODO: implement game teams support for changing colors
+      }
     }
     private void butMouseStepsColor_Click(object sender, EventArgs e) {
-      MouseStepsColor = RequestColor();
+      _game.MouseShadeColor = RequestColor();
     }
     private Color RequestColor() {
       var cd = new ColorDialog();
@@ -171,53 +171,28 @@ namespace LifeSim
     }
     //Restart map when teams mode is selected && changed
     private void cbTeams_CheckedChanged(object sender, EventArgs e) {
-      butStart_Click(sender, e);
+      if (_game is ClassicGame) {
+        _game = new ClassicGame(
+        this, Color.Crimson, (int)nudOffset.Value, (int)nudResolution.Value, cbPixelOffBorder.Checked, Color.Black,
+        PBBox.Width / (int)nudResolution.Value, PBBox.Height / (int)nudResolution.Value, (byte)nudTransparency.Value, Color.Gray,
+        (int)nudBrushThickness.Value, (int)nudBrushThickness.Value, 0, 0
+      );
+      }
+      else if (_game is TeamsGame) {
+        //TODO: add support for changing teams
+        //_game = new TeamsGame(
+        //  this, Color.Crimson, (int)nudOffset.Value, (int)nudResolution.Value, cbPixelOffBorder.Checked, Color.Black,
+        //  pbMap.Width / (int)nudResolution.Value, pbMap.Height / (int)nudResolution.Value, (byte)nudTransparency.Value, Color.Gray,
+        //  (int)nudBrushThickness.Value, (int)nudBrushThickness.Value, 0, 0, 0
+        //);
+      }
     }
     private void nudTeams_ValueChanged(object sender, EventArgs e) {
-      if (cbTeams.Checked) {
-        butStart_Click(sender, e);
+      if (_game is TeamsGame game) {
+        //TODO: support for changing amount of teams wihtout allocating new TeamsGame
       }
       nudBrushTeam.Maximum = nudTeams.Value;
     }
-    #endregion
-
-    #region Methods
-    private void Reset()
-    {
-      //Set main components
-      if (cbTeams.Checked)
-      {
-        var rand = new Random();
-        var teams = (int)nudTeams.Value;
-        var colors = new Color[teams];
-
-        for (var i = 0; i < teams; ++i)
-        {
-          colors[i] = Color.FromArgb(255, rand.Next(256), rand.Next(256), rand.Next(256));
-        }
-
-        Presenter = new CPUByteMTPresenter2D(teams);
-        _mechanics = new GUICPUByteMTMechanics2D(this, Presenter as CPUByteMTPresenter2D, colors);
-      }
-      else
-      {
-        Presenter = new CPUBitMTPresenter2D();
-        _mechanics = new GUICPUBitMTMechanics2D(this, Presenter as CPUBitMTPresenter2D);
-      }
-      //ResetModelValues
-      _mechanics.ResetModel(pbMap, Offset, Resolution);
-      Graphics.Clear(BackgroundColor);
-    }
-    private void Pause()
-    {
-      timerGPS.Stop();
-    }
-    private void Unpause()
-    {
-      timerGPS.Start();
-    }
-    #endregion
-
 
     ///<summary>
     /// Changes the resolution including the x and y centers.

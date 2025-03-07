@@ -9,7 +9,7 @@ namespace LifeSim {
   /// <summary>
   /// Init Resetable interface, class implementing has ability to InitReset
   /// </summary>
-  internal interface IInitResetable {
+  public interface IInitResetable {
     ///<summary>
     /// Resizes the grid (Resets), and initializes with old values with offsets
     /// </summary>

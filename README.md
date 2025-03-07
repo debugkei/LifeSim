@@ -9,10 +9,10 @@ I only used vs2022 for it, and I dont know how it will be edited in other IDEs.
 I only used vs2022 on this, so just opening the solution is enough.  
 Visual studio will do the job.  
 
-# Whats the thing with those errors and files?
-Those errors and files are temporarly there because I'm remaking (revamping) the whole thing.
+# Important
+The project is still being actively developed, thats why it may not even run.  
 
 # Vendors/Dependencies
 I used:
 * WinForms
-* Gdi library, built-in C#
+* Gdi+ library, built-in C#

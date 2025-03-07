@@ -15,29 +15,27 @@ namespace LifeSim {
     private int _previousX;
     private int _previousY;
     private Point _brushCenter;
-    private Rectangle[,] _mouseStepsRects;
+    private Rectangle[,] _mouseShadeRects;
     private TeamsRenderer _renderer;
     //Mouse steps "Preview of draw. Color below cursor."
-    private SolidBrush _mouseStepsBrush;
-    public Color MouseStepsColor { get => MouseStepsColor; set { MouseStepsColor = value; _mouseStepsBrush = GetMouseStepsBrush(); } }
-    public byte MouseStepsAlpha { get => MouseStepsAlpha; set { MouseStepsAlpha = value; _mouseStepsBrush = GetMouseStepsBrush(); } }
+    private SolidBrush _mouseShadeBrush;
+    public Color MouseShadeColor { set { _mouseShadeBrush = GetMouseStepsBrush(_mouseShadeBrush.Color.A, value); } }
+    public byte MouseShadeAlpha { set { _mouseShadeBrush = GetMouseStepsBrush(value, _mouseShadeBrush.Color); } }
     private View _view;
     /// <summary>
     /// Index of the team the client wants to draw, it can be 0-indexed.
     /// </summary>
     public byte TeamToDraw { get; set; }
-    public TeamsMouseHandler(int brushWidth, int brushHeight, int x, int y, TeamsRenderer renderer, Color mouseStepsColor, byte mouseStepsAlpha, View view) {
+    public TeamsMouseHandler(int brushWidth, int brushHeight, int x, int y, TeamsRenderer renderer, Color mouseShadeColor, byte mouseShadeAlpha, View view, byte teamToDraw) {
       //Init
-      BrushWidth = brushWidth;
-      BrushHeight = brushHeight;
       X = x;
       Y = y;
       _renderer = renderer;
-      MouseStepsColor = mouseStepsColor;
-      MouseStepsAlpha = mouseStepsAlpha;
-      _mouseStepsRects = new Rectangle[BrushWidth, BrushHeight];
-      _brushCenter = Funcs.GetBrushCenter(X, Y, BrushWidth, BrushHeight);
+      _mouseShadeBrush = GetMouseStepsBrush(mouseShadeAlpha, mouseShadeColor);
+      _mouseShadeRects = new Rectangle[brushWidth, brushHeight];
+      _brushCenter = Funcs.GetBrushCenter(X, Y, brushWidth, brushHeight);
       _view = view;
+      TeamToDraw = teamToDraw;
     }
 
     /// <summary>
@@ -52,22 +50,18 @@ namespace LifeSim {
     /// Width of the brush (to paint on the grid)
     /// </summary>
     //Callback to update rectangles on change
-    public int BrushWidth {
-      get => BrushWidth; set {
-        BrushWidth = value;
-        _mouseStepsRects = new Rectangle[BrushWidth, BrushHeight];
-        _brushCenter = Funcs.GetBrushCenter(X, Y, BrushWidth, BrushHeight);
+    public int BrushWidth { get => _mouseShadeRects.GetLength(0); set {
+        _mouseShadeRects = new Rectangle[value, _mouseShadeRects.GetLength(1)];
+        _brushCenter = Funcs.GetBrushCenter(X, Y, value, _mouseShadeRects.GetLength(1));
       }
     }
     /// <summary>
     /// Height of the brush (to paint on the grid)
     /// </summary>
     //Callback to update rectangles on change
-    public int BrushHeight {
-      get => BrushHeight; set {
-        BrushHeight = value;
-        _mouseStepsRects = new Rectangle[BrushWidth, BrushHeight];
-        _brushCenter = Funcs.GetBrushCenter(X, Y, BrushWidth, BrushHeight);
+    public int BrushHeight { get => _mouseShadeRects.GetLength(1);  set {
+        _mouseShadeRects = new Rectangle[_mouseShadeRects.GetLength(0), value];
+        _brushCenter = Funcs.GetBrushCenter(X, Y, _mouseShadeRects.GetLength(0), value);
       }
     }
 
@@ -94,16 +88,16 @@ namespace LifeSim {
         for (var i = 0; i < BrushWidth; ++i) {
           for (var j = 0; j < BrushWidth; ++j) {
             //It makes a cursor (center) be in the middle, if the width or height is even if focuses rectangle to the left (or up)
-            _mouseStepsRects[i, j] = new Rectangle((i - _brushCenter.X + X), (j - _brushCenter.Y + Y), _renderer.CellWidth, _renderer.CellWidth);
+            _mouseShadeRects[i, j] = new Rectangle((i - _brushCenter.X + X), (j - _brushCenter.Y + Y), _renderer.CellWidth, _renderer.CellWidth);
           }
         }
       }
       //Ask renderer to render mouse steps
       for (var i = 0; i < BrushWidth; ++i) {
         for (var j = 0; j < BrushWidth; ++j) {
-          var x = _mouseStepsRects[i, j].X / _renderer.Resolution;
-          var y = _mouseStepsRects[i, j].Y / _renderer.Resolution;
-          if (x >= 0 && y >= 0 && x < grid.Width && y < grid.Height) _renderer.RenderRect(_mouseStepsBrush, _mouseStepsRects[i, j]);
+          var x = _mouseShadeRects[i, j].X / _renderer.Resolution;
+          var y = _mouseShadeRects[i, j].Y / _renderer.Resolution;
+          if (x >= 0 && y >= 0 && x < grid.Width && y < grid.Height) _renderer.RenderRect(_mouseShadeBrush, _mouseShadeRects[i, j]);
         }
       }
 
@@ -112,7 +106,7 @@ namespace LifeSim {
     }
 
     private void Draw(TeamsGrid grid) {
-      if (_renderer.CellColors.Length <= TeamToDraw + 1) return; //Return if Team to draw is greater than possible teams availible
+      if (_renderer.Teams <= TeamToDraw + 1) return; //Return if Team to draw is greater than possible teams availible
       for (var i = 0; i < BrushWidth; ++i) {
         for (var j = 0; j < BrushWidth; ++j) {
           //Draw all elements including the brush thickness
@@ -192,8 +186,8 @@ namespace LifeSim {
     /// <summary>
     /// Gets the mouse steps brush
     /// </summary>
-    private SolidBrush GetMouseStepsBrush() {
-      return new SolidBrush(Color.FromArgb(MouseStepsAlpha, MouseStepsColor));
+    private SolidBrush GetMouseStepsBrush(byte alpha, Color color) {
+      return new SolidBrush(Color.FromArgb(alpha, color));
     }
   }
 }

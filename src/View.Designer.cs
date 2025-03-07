@@ -57,7 +57,7 @@
       butEmpty = new Button();
       butPause = new Button();
       butStart = new Button();
-      pbMap = new PictureBox();
+      PBBox = new PictureBox();
       timerFPS = new System.Windows.Forms.Timer(components);
       timerGPS = new System.Windows.Forms.Timer(components);
       ((System.ComponentModel.ISupportInitialize)scMap).BeginInit();
@@ -78,7 +78,7 @@
       ((System.ComponentModel.ISupportInitialize)nudBrushThickness).BeginInit();
       ((System.ComponentModel.ISupportInitialize)nudDensity).BeginInit();
       ((System.ComponentModel.ISupportInitialize)nudResolution).BeginInit();
-      ((System.ComponentModel.ISupportInitialize)pbMap).BeginInit();
+      ((System.ComponentModel.ISupportInitialize)PBBox).BeginInit();
       SuspendLayout();
       // 
       // scMap
@@ -97,7 +97,7 @@
       // 
       // scMap.Panel2
       // 
-      scMap.Panel2.Controls.Add(pbMap);
+      scMap.Panel2.Controls.Add(PBBox);
       scMap.Size = new Size(1146, 617);
       scMap.SplitterDistance = 167;
       scMap.TabIndex = 0;
@@ -498,17 +498,17 @@
       butStart.UseVisualStyleBackColor = false;
       butStart.Click += butStart_Click;
       // 
-      // pbMap
+      // PBBox
       // 
-      pbMap.Dock = DockStyle.Fill;
-      pbMap.Location = new Point(0, 0);
-      pbMap.Name = "pbMap";
-      pbMap.Size = new Size(973, 615);
-      pbMap.TabIndex = 0;
-      pbMap.TabStop = false;
-      pbMap.MouseDown += pbMap_MouseDown;
-      pbMap.MouseMove += pbMap_MouseMove;
-      pbMap.MouseWheel += pbMap_MouseWheel;
+      PBBox.Dock = DockStyle.Fill;
+      PBBox.Location = new Point(0, 0);
+      PBBox.Name = "PBBox";
+      PBBox.Size = new Size(973, 615);
+      PBBox.TabIndex = 0;
+      PBBox.TabStop = false;
+      PBBox.MouseDown += pbMap_MouseDown;
+      PBBox.MouseMove += pbMap_MouseMove;
+      PBBox.MouseWheel += pbMap_MouseWheel;
       // 
       // timerFPS
       // 
@@ -519,14 +519,14 @@
       // 
       timerGPS.Tick += timerGPS_Tick;
       // 
-      // Main
+      // View
       // 
       AutoScaleDimensions = new SizeF(7F, 15F);
       AutoScaleMode = AutoScaleMode.Font;
       ClientSize = new Size(1146, 617);
       Controls.Add(scMap);
       MinimumSize = new Size(352, 641);
-      Name = "Main";
+      Name = "View";
       Text = "Life Simulator";
       Resize += Form1_Resize;
       scMap.Panel1.ResumeLayout(false);
@@ -548,7 +548,7 @@
       ((System.ComponentModel.ISupportInitialize)nudBrushThickness).EndInit();
       ((System.ComponentModel.ISupportInitialize)nudDensity).EndInit();
       ((System.ComponentModel.ISupportInitialize)nudResolution).EndInit();
-      ((System.ComponentModel.ISupportInitialize)pbMap).EndInit();
+      ((System.ComponentModel.ISupportInitialize)PBBox).EndInit();
       ResumeLayout(false);
     }
 
@@ -557,7 +557,7 @@
     private SplitContainer scMap;
     private SplitContainer splitContainer2;
     private NumericUpDown nudResolution;
-    private PictureBox pbMap;
+    private PictureBox PBBox;
     private Label label1;
     private Label label2;
     private NumericUpDown nudDensity;

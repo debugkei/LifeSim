@@ -14,7 +14,7 @@ namespace LifeSim {
     private Graphics _graphics;
     private SolidBrush _cellBrush;
     private View _view;
-    public Color CellColor { get => CellColor; set { CellColor = value; _cellBrush = new SolidBrush(CellColor); } }
+    public Color CellColor { set { _cellBrush = new SolidBrush(value); } }
     /// <summary>
     /// Offset of the map at which its rendered
     /// </summary>
@@ -22,7 +22,7 @@ namespace LifeSim {
     public int Resolution { get; set; }
     //Cell width
     public int CellWidth { get; private set; }
-    public bool PixelOffBorder { get => PixelOffBorder; set { PixelOffBorder = value; CellWidth = GetCellWidth(); } }
+    public bool PixelOffBorder { set { CellWidth = GetCellWidth(value); } }
     public Color BackgroundColor { get; set; }
     //Ctor
     public ClassicRenderer(View view, Color cellColor, int offset, int resolution, bool pixelOffBorder, Color backgroundColor) {
@@ -76,8 +76,8 @@ namespace LifeSim {
     /// Calculates the width of a single cell
     /// </summary>
     /// <returns></returns>
-    private int GetCellWidth() {
-      return Resolution - (PixelOffBorder ? 1 : 0);
+    private int GetCellWidth(bool pixelOffBorder) {
+      return Resolution - (pixelOffBorder ? 1 : 0);
     }
   }
 }
