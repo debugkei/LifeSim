@@ -46,7 +46,7 @@ namespace LifeSim
       timerGPS.Start();
       timerFPS.Start();
 
-      _game.Set();
+      _game.Fill();
     }
 
     //Timers
@@ -78,7 +78,7 @@ namespace LifeSim
     //Start
     private void butStart_Click(object sender, EventArgs e)
     {
-      _game.Set();
+      _game.Fill();
     }
     //Pause
     private void butPause_Click(object sender, EventArgs e)

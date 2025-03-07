@@ -25,7 +25,7 @@ namespace LifeSim {
     public int BrushHeight { set; }
     public void Update();
     public void FixedUpdate();
-    public void Set();
+    public void Fill();
     public void Empty();
     public void MouseMove(int x, int y);
     public void MouseUp(MouseButtonType type);

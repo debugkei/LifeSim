@@ -64,7 +64,7 @@ namespace LifeSim {
       _mouseHanlder.HandleMouseWheel(_grid, delta);
     }
 
-    public void Set() {
+    public void Fill() {
       _grid.Random(new Random().Next(2, 20));
     }
 
