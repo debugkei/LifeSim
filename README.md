@@ -1,4 +1,4 @@
-# LifeSim
+# life-game
 The windows-only GUI implementation of conway's game of life with some additions.  
 I made it via WinForms and right now its in active development.  
 I'm not accepting any pull requests yet.  

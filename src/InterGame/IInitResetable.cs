@@ -5,7 +5,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace LifeSim {
+namespace lifegame {
   /// <summary>
   /// Init Resetable interface, class implementing has ability to InitReset
   /// </summary>

@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace LifeSim {
+namespace lifegame {
   /// <summary>
   /// The game interface, game is managed from here.
   /// </summary>

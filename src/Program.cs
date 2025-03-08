@@ -1,4 +1,4 @@
-namespace LifeSim
+namespace lifegame
 {
   internal static class Program
   {

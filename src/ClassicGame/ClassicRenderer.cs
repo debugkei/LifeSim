@@ -1,4 +1,4 @@
-﻿using LifeSim;
+﻿using lifegame;
 using System;
 using System.Collections.Generic;
 using System.Drawing;
@@ -6,7 +6,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace LifeSim {
+namespace lifegame {
   /// <summary>
   /// Classic Renderer for WinForms, renders via CPU
   /// </summary>

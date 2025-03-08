@@ -5,9 +5,9 @@ using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace LifeSim {
+namespace lifegame {
   /// <summary>
-  /// The core logic of the LifeSim, the generations computations, computes the grid's generation with teams
+  /// The core logic of the life-game, the generations computations, computes the grid's generation with teams
   /// </summary>
   internal class TeamsRules {
     private byte _teams;

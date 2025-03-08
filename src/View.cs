@@ -4,7 +4,7 @@ using System.DirectoryServices.ActiveDirectory;
 using System.Numerics;
 using System.Windows.Forms;
 
-namespace LifeSim
+namespace lifegame
 {
   public partial class View : Form
   {

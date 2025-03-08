@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace LifeSim {
+namespace lifegame {
   /// <summary>
   /// This class exists to represent functions, its purpose is to avoid repeating code:
   /// since there are 2 implementations for every game mode the private functions that can reuse code only available in interfaces, which dont support protected
