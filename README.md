@@ -10,7 +10,7 @@ I only used vs2022 on this, so just opening the solution is enough.
 Visual studio will do the job.  
 
 # Important
-The project is still being actively developed, thats why it may not even run.  
+The project doesnt function well, its core design and architecture are complete though.
 
 # Vendors/Dependencies
 I used:
